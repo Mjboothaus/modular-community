@@ -11,6 +11,7 @@ permissions:
 
 jobs:
   check-incompatible-packages:
+    if: github.repository == 'modular/modular-community' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
 
     steps:
@@ -19,7 +20,7 @@ jobs:
           fetch-depth: 2
       - uses: prefix-dev/setup-pixi@82d477f15f3a381dbcc8adc1206ce643fe110fb7 # v0.9.3
         with:
-          pixi-version: v0.37.0
+          pixi-version: v0.63.2
 
       - name: Configure git
         run: pixi run configure-git
