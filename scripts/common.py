@@ -14,7 +14,36 @@ class RecipeFailure(TypedDict):
 def load_failed_compatibility(file_path: Path) -> dict[str, RecipeFailure]:
     if file_path.exists():
         with file_path.open("r") as file:
-            return dict(json.load(file))
+            content = file.read().strip()
+
+        if not content:
+            return {}
+
+        parsed_data: Any
+        try:
+            parsed_data = json.loads(content)
+        except json.JSONDecodeError:
+            # Some historical files were YAML-formatted despite the .json suffix.
+            # Fall back to YAML parsing and normalize output to JSON on save.
+            parsed_data = yaml.safe_load(content)
+
+        if not isinstance(parsed_data, dict):
+            eprint(
+                f"Invalid failed compatibility format in {file_path}: expected mapping, got {type(parsed_data).__name__}"
+            )
+            return {}
+
+        normalized: dict[str, RecipeFailure] = {}
+        for recipe_name, failure_data in parsed_data.items():
+            if not isinstance(recipe_name, str):
+                continue
+            if not isinstance(failure_data, dict):
+                continue
+            failed_at = failure_data.get("failed_at")
+            if isinstance(failed_at, str):
+                normalized[recipe_name] = {"failed_at": failed_at}
+
+        return normalized
     return {}
 
 

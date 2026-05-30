@@ -7,6 +7,7 @@ from scripts.common import (
     eprint,
     load_failed_compatibility,
     run_command,
+    save_failed_compatibility,
 )
 from datetime import datetime, timedelta
 import yaml
@@ -88,8 +89,9 @@ def main() -> None:
     # Iterate through each failed compatibility file
     for failed_compatibility_file in failed_compatibility_files:
         # Save the updated failed compatibility data
-        with failed_compatibility_file.open("w") as file:
-            yaml.safe_dump(failed_compatibility[failed_compatibility_file], file)
+        save_failed_compatibility(
+            failed_compatibility_file, failed_compatibility[failed_compatibility_file]
+        )
 
         # Commit and push changes to the failed compatibility file
         run_command(["git", "add", str(failed_compatibility_file)])
